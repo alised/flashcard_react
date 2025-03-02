@@ -1,20 +1,28 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Learn from './components/Learn';
+import Database from './components/Database';
+import Words from './components/Words';
+import Settings from './components/Settings';
+import { ThemeProvider } from './contexts/ThemeContext';
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-      <div className="relative py-3 sm:max-w-xl sm:mx-auto">
-        <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
-          <div className="max-w-md mx-auto">
-            <div className="divide-y divide-gray-200">
-              <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                <h1 className="text-3xl font-bold text-indigo-600 mb-8">Hello World!</h1>
-                <p className="text-xl text-gray-600">Welcome to my React application</p>
-              </div>
-            </div>
-          </div>
+    <ThemeProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Navigate to="/learn" replace />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/database" element={<Database />} />
+            <Route path="/words" element={<Words />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
         </div>
-      </div>
-    </div>
-  )
+      </Router>
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;
