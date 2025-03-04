@@ -10,7 +10,7 @@ const Learn = () => {
     setWordAsMastered 
   } = useWords();
   
-  const { dailyNewWords } = useTheme();
+  const { dailyNewWords, autoShowAnswer } = useTheme();
   
   const [currentWord, setCurrentWord] = useState<WordEntry | null>(null);
   const [isShowingAnswer, setIsShowingAnswer] = useState(false);
@@ -42,7 +42,7 @@ const Learn = () => {
     
     setStudySession(dueWords);
     setCurrentWord(dueWords[0]);
-    setIsShowingAnswer(false);
+    setIsShowingAnswer(autoShowAnswer);
     setAnsweredCount(0);
     setSessionActive(true);
     setMessage({ text: '', type: null });
@@ -68,7 +68,7 @@ const Learn = () => {
       const currentIndex = studySession.findIndex(w => w.id === currentWord.id);
       if (currentIndex < studySession.length - 1) {
         setCurrentWord(studySession[currentIndex + 1]);
-        setIsShowingAnswer(false);
+        setIsShowingAnswer(autoShowAnswer);
       } else {
         // End of session
         setSessionActive(false);
@@ -104,7 +104,7 @@ const Learn = () => {
       const currentIndex = studySession.findIndex(w => w.id === currentWord.id);
       if (currentIndex < studySession.length - 1) {
         setCurrentWord(studySession[currentIndex + 1]);
-        setIsShowingAnswer(false);
+        setIsShowingAnswer(autoShowAnswer);
       } else {
         // End of session
         setSessionActive(false);

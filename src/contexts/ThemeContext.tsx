@@ -5,6 +5,8 @@ type ThemeContextType = {
   toggleDarkMode: () => void;
   dailyNewWords: number;
   setDailyNewWords: (count: number) => void;
+  autoShowAnswer: boolean;
+  toggleAutoShowAnswer: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -23,6 +25,12 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [dailyNewWords, setDailyNewWordsState] = useState<number>(() => {
     const savedCount = localStorage.getItem('dailyNewWords');
     return savedCount ? parseInt(savedCount, 10) : 10;
+  });
+
+  // Initialize auto show answer setting from localStorage or default to false
+  const [autoShowAnswer, setAutoShowAnswer] = useState<boolean>(() => {
+    const savedSetting = localStorage.getItem('autoShowAnswer');
+    return savedSetting ? JSON.parse(savedSetting) : false;
   });
 
   // Listen for changes in system preference
@@ -57,6 +65,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('dailyNewWords', dailyNewWords.toString());
   }, [dailyNewWords]);
 
+  // Save auto show answer setting to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('autoShowAnswer', JSON.stringify(autoShowAnswer));
+  }, [autoShowAnswer]);
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
@@ -67,8 +80,19 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
+  const toggleAutoShowAnswer = () => {
+    setAutoShowAnswer(!autoShowAnswer);
+  };
+
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleDarkMode, dailyNewWords, setDailyNewWords }}>
+    <ThemeContext.Provider value={{ 
+      darkMode, 
+      toggleDarkMode, 
+      dailyNewWords, 
+      setDailyNewWords,
+      autoShowAnswer,
+      toggleAutoShowAnswer
+    }}>
       {children}
     </ThemeContext.Provider>
   );
