@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useWords, WordEntry } from '../contexts/WordsContext';
-import { format } from 'date-fns';
 
 const Words = () => {
   const { words, addWord, deleteWord, doesWordExist } = useWords();
@@ -64,14 +63,21 @@ const Words = () => {
 
   // Get box name for display
   const getBoxName = (box: number): string => {
-    if (box === 6) return 'Mastered';
-    return `Box ${box}`;
+    switch (box) {
+      case 1: return 'Box 1 (Daily)';
+      case 2: return 'Box 2 (Every 2 days)';
+      case 3: return 'Box 3 (Every 4 days)';
+      case 4: return 'Box 4 (Weekly)';
+      case 5: return 'Box 5 (Every 2 weeks)';
+      case 6: return 'Mastered';
+      default: return `Box ${box}`;
+    }
   };
 
   // Get next review date in readable format
-  const getNextReviewDate = (timestamp: number): string => {
-    if (timestamp === Number.MAX_SAFE_INTEGER) return 'Never';
-    return format(new Date(timestamp), 'yyyy-MM-dd');
+  const getNextReviewDate = (dateString: string): string => {
+    if (dateString === '9999-12-31') return 'Never';
+    return dateString;
   };
 
   return (

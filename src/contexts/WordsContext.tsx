@@ -4,17 +4,26 @@ import { FlashcardDB } from '../db';
 // Box intervals in days
 const BOX_INTERVALS = [1, 2, 4, 8, 16];
 
-// Helper function to convert timestamp to date string (YYYY-MM-DD)
+// Helper function to get today's date in local timezone as YYYY-MM-DD
+const getTodayLocalDate = (): string => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
+
+// Helper function to convert timestamp to date string (YYYY-MM-DD) in local timezone
 const timestampToDateString = (timestamp: number): string => {
   if (timestamp === Number.MAX_SAFE_INTEGER) return '9999-12-31';
   const date = new Date(timestamp);
-  return date.toISOString().split('T')[0];
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
-// Helper function to convert date string to timestamp (start of day)
+// Helper function to convert date string to timestamp (start of day) in local timezone
 const dateStringToTimestamp = (dateString: string): number => {
   if (dateString === '9999-12-31') return Number.MAX_SAFE_INTEGER;
-  return new Date(dateString).setHours(0, 0, 0, 0);
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
 };
 
 // Calculate next review date based on box number
@@ -45,7 +54,7 @@ const calculateNextReview = (box: number): string => {
       now.setDate(now.getDate() + 1); // Default to 1 day
   }
   
-  return now.toISOString().split('T')[0];
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 };
 
 // Types
@@ -98,7 +107,7 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     // Check for duplicates (case insensitive)
     if (doesWordExist(word)) return false;
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayLocalDate();
     const newWord: WordEntry = {
       id: Date.now().toString(),
       word: word.trim(),
@@ -188,6 +197,7 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       // Merge with existing words, avoiding duplicates by word text
       const existingWordTexts = new Set(words.map(w => w.word.toLowerCase()));
       
+      const today = getTodayLocalDate();
       const newWords = importedWords
         .filter(w => !existingWordTexts.has(w.word.toLowerCase()))
         .map(word => ({
@@ -195,7 +205,7 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           word: word.word.trim(),
           context: word.context.trim(),
           box: word.box || 1,
-          nextReview: word.nextReview || new Date().toISOString().split('T')[0],
+          nextReview: word.nextReview || today,
           lastReviewed: word.lastReviewed || '1970-01-01'
         }));
       
@@ -213,7 +223,7 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // Get all words due for review
   const getDueWords = (dailyLimit?: number): WordEntry[] => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayLocalDate();
     
     // Get all due words
     const allDueWords = words
@@ -250,7 +260,7 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         newBox = 1;
       }
       
-      const today = new Date().toISOString().split('T')[0];
+      const today = getTodayLocalDate();
       const updatedWord = {
         ...word,
         box: newBox,
@@ -273,7 +283,7 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       const word = words.find(w => w.id === id);
       if (!word) return;
       
-      const today = new Date().toISOString().split('T')[0];
+      const today = getTodayLocalDate();
       const updatedWord = {
         ...word,
         box: 6, // Mastered
