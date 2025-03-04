@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useWords } from '../contexts/WordsContext';
 
 const Database = () => {
-  const { words, importWords, exportWords } = useWords();
+  const { words, importWords, exportWords, exportWordsSimple } = useWords();
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' | null }>({ text: '', type: null });
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,7 +51,7 @@ const Database = () => {
     reader.readAsText(file);
   };
 
-  // Handle export
+  // Handle full export (words and user learning data)
   const handleExport = async () => {
     if (words.length === 0) {
       setMessage({ text: 'No words to export', type: 'error' });
@@ -68,7 +68,7 @@ const Database = () => {
       
       const a = document.createElement('a');
       a.href = url;
-      a.download = `flashcard_words_${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `flashcard_words_full_${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       
@@ -76,7 +76,42 @@ const Database = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      setMessage({ text: 'Words exported successfully', type: 'success' });
+      setMessage({ text: 'Words and learning data exported successfully', type: 'success' });
+    } catch (error) {
+      setMessage({ text: 'Failed to export words', type: 'error' });
+    } finally {
+      setIsLoading(false);
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage({ text: '', type: null }), 3000);
+    }
+  };
+
+  // Handle simple export (only words and context)
+  const handleSimpleExport = async () => {
+    if (words.length === 0) {
+      setMessage({ text: 'No words to export', type: 'error' });
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage({ text: '', type: null }), 3000);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const json = exportWordsSimple();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `flashcard_words_simple_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      setMessage({ text: 'Words exported successfully (without learning data)', type: 'success' });
     } catch (error) {
       setMessage({ text: 'Failed to export words', type: 'error' });
     } finally {
@@ -156,7 +191,7 @@ const Database = () => {
             Export your collection of words to a JSON file for backup or sharing.
           </p>
           
-          <div className="mb-4">
+          <div className="mb-4 space-y-3">
             <button
               onClick={handleExport}
               disabled={words.length === 0 || isLoading}
@@ -166,7 +201,19 @@ const Database = () => {
                   : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
               }`}
             >
-              {isLoading ? 'Exporting...' : 'Download File'}
+              {isLoading ? 'Exporting...' : 'Export Words & User Data'}
+            </button>
+            
+            <button
+              onClick={handleSimpleExport}
+              disabled={words.length === 0 || isLoading}
+              className={`w-full px-4 py-3 rounded-md text-white transition-colors ${
+                words.length > 0 && !isLoading
+                  ? 'bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-800' 
+                  : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+              }`}
+            >
+              {isLoading ? 'Exporting...' : 'Export Words Only'}
             </button>
           </div>
           

@@ -143,12 +143,17 @@ const Help = () => {
         
         <h3 className="text-lg font-medium mb-2 text-indigo-700 dark:text-indigo-400">Exporting Words</h3>
         <p className="text-gray-700 dark:text-gray-300 mb-4">
-          Click the "Download File" button to export all your words as a JSON file. This is useful for:
+          The app provides two options for exporting your words:
         </p>
         <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 mb-4 ml-4">
-          <li>Creating a backup of your word collection</li>
-          <li>Transferring words to another device</li>
-          <li>Sharing your word collection with others</li>
+          <li>
+            <strong>Export Words & User Data</strong> - Exports all words with their complete learning data (box number, review dates, etc.). 
+            Use this for creating a full backup of your progress.
+          </li>
+          <li>
+            <strong>Export Words Only</strong> - Exports only the words and their context sentences, without any learning data.
+            Use this when you want to share your word collection with others without your personal learning progress.
+          </li>
         </ul>
         
         <h3 className="text-lg font-medium mb-2 text-indigo-700 dark:text-indigo-400">Importing Words</h3>

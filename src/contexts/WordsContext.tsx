@@ -74,6 +74,7 @@ export interface WordsContextType {
   updateWord: (id: string, word: string, context: string) => Promise<boolean>;
   doesWordExist: (word: string) => boolean;
   exportWords: () => string;
+  exportWordsSimple: () => string;
   importWords: (jsonData: string) => Promise<boolean>;
   getDueWords: (dailyLimit?: number) => WordEntry[];
   updateWordBox: (id: string, understood: boolean) => Promise<void>;
@@ -175,6 +176,15 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   // Export words to JSON
   const exportWords = (): string => {
     return JSON.stringify(words, null, 2);
+  };
+
+  // Export only words and context to JSON (without learning data)
+  const exportWordsSimple = (): string => {
+    const simpleWords = words.map(word => ({
+      word: word.word,
+      context: word.context
+    }));
+    return JSON.stringify(simpleWords, null, 2);
   };
 
   // Import words from JSON
@@ -307,6 +317,7 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     updateWord,
     doesWordExist,
     exportWords,
+    exportWordsSimple,
     importWords,
     getDueWords,
     updateWordBox,
