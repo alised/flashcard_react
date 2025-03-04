@@ -161,9 +161,25 @@ const Help = () => {
           Click "Select File" to import words from a JSON file. The file should contain an array of word objects.
           Only the "word" and "context" fields are required - other fields will be generated automatically.
         </p>
-        <p className="text-gray-700 dark:text-gray-300 mb-2">
+        <p className="text-gray-700 dark:text-gray-300 mb-4">
           Note: Duplicate words (words that already exist in your collection) will be skipped during import.
         </p>
+
+        <h3 className="text-lg font-medium mb-2 text-indigo-700 dark:text-indigo-400">Database Management</h3>
+        <p className="text-gray-700 dark:text-gray-300 mb-4">
+          The Database section also includes database management options:
+        </p>
+        <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 mb-4 ml-4">
+          <li>
+            <strong>Delete All Words</strong> - Permanently removes all words and learning progress from your database.
+            This action cannot be undone, so make sure to export a backup before proceeding.
+          </li>
+        </ul>
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md border-l-4 border-yellow-400 dark:border-yellow-600 mb-4">
+          <p className="text-sm text-yellow-700 dark:text-yellow-400">
+            Always export a backup of your data before performing any database management operations.
+          </p>
+        </div>
       </div>
       
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">

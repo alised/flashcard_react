@@ -2,9 +2,10 @@ import { useState, useRef } from 'react';
 import { useWords } from '../contexts/WordsContext';
 
 const Database = () => {
-  const { words, importWords, exportWords, exportWordsSimple } = useWords();
+  const { words, importWords, exportWords, exportWordsSimple, deleteAllWords } = useWords();
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' | null }>({ text: '', type: null });
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle file import
@@ -121,6 +122,22 @@ const Database = () => {
     }
   };
 
+  // Handle delete all words
+  const handleDeleteAllWords = async () => {
+    setIsLoading(true);
+    try {
+      await deleteAllWords();
+      setMessage({ text: 'All words have been deleted', type: 'success' });
+      setShowDeleteConfirm(false);
+    } catch (error) {
+      setMessage({ text: 'Failed to delete words', type: 'error' });
+    } finally {
+      setIsLoading(false);
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage({ text: '', type: null }), 3000);
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 text-indigo-900 dark:text-indigo-300">Database</h1>
@@ -227,6 +244,64 @@ const Database = () => {
               <span className="text-sm font-medium text-indigo-800 dark:text-indigo-300">File format:</span>
               <span className="text-sm text-indigo-900 dark:text-indigo-200">JSON</span>
             </div>
+          </div>
+        </div>
+        
+        {/* Database Management Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors">
+          <h2 className="text-xl font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Database Management</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Manage your word database. Be careful with these actions as they cannot be undone.
+          </p>
+          
+          <div className="mb-4">
+            {!showDeleteConfirm ? (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={words.length === 0 || isLoading}
+                className={`w-full px-4 py-3 rounded-md text-white transition-colors ${
+                  words.length > 0 && !isLoading
+                    ? 'bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-800' 
+                    : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                }`}
+              >
+                Delete All Words
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-red-600 dark:text-red-400 text-sm font-medium">
+                  Are you sure? This will delete all {words.length} words and cannot be undone!
+                </p>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleDeleteAllWords}
+                    disabled={isLoading}
+                    className={`flex-1 px-4 py-3 rounded-md text-white transition-colors ${
+                      !isLoading
+                        ? 'bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-800' 
+                        : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                    }`}
+                  >
+                    {isLoading ? 'Deleting...' : 'Yes, Delete All'}
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isLoading}
+                    className="flex-1 px-4 py-3 rounded-md text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-400 dark:border-yellow-600">
+            <h3 className="text-sm font-medium mb-2 text-yellow-800 dark:text-yellow-300">Warning:</h3>
+            <p className="text-sm text-yellow-700 dark:text-yellow-400">
+              Deleting all words will permanently remove your entire word collection and all learning progress.
+              Make sure to export a backup before proceeding.
+            </p>
           </div>
         </div>
       </div>

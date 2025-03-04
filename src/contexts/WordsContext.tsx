@@ -79,6 +79,7 @@ export interface WordsContextType {
   getDueWords: (dailyLimit?: number) => WordEntry[];
   updateWordBox: (id: string, understood: boolean) => Promise<void>;
   setWordAsMastered: (id: string) => Promise<void>;
+  deleteAllWords: () => Promise<void>;
 }
 
 const WordsContext = createContext<WordsContextType | undefined>(undefined);
@@ -135,6 +136,16 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       setWords(prev => prev.filter(word => word.id !== id));
     } catch (error) {
       console.error('Failed to delete word:', error);
+    }
+  };
+
+  // Delete all words
+  const deleteAllWords = async (): Promise<void> => {
+    try {
+      await db.words.clear();
+      setWords([]);
+    } catch (error) {
+      console.error('Failed to delete all words:', error);
     }
   };
 
@@ -321,7 +332,8 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     importWords,
     getDueWords,
     updateWordBox,
-    setWordAsMastered
+    setWordAsMastered,
+    deleteAllWords
   };
 
   return (
