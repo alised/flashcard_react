@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useWords, WordEntry } from '../contexts/WordsContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Learn = () => {
   const { 
@@ -8,6 +9,8 @@ const Learn = () => {
     updateWordBox, 
     setWordAsMastered 
   } = useWords();
+  
+  const { dailyNewWords } = useTheme();
   
   const [currentWord, setCurrentWord] = useState<WordEntry | null>(null);
   const [isShowingAnswer, setIsShowingAnswer] = useState(false);
@@ -21,17 +24,17 @@ const Learn = () => {
   // Load due words when component mounts
   useEffect(() => {
     checkDueWords();
-  }, [words]);
+  }, [words, dailyNewWords]);
 
   // Check for due words
   const checkDueWords = () => {
-    const dueWords = getDueWords();
+    const dueWords = getDueWords(dailyNewWords);
     setDueCount(dueWords.length);
   };
 
-  // Start learning session
+  // Start a new study session
   const startSession = () => {
-    const dueWords = getDueWords();
+    const dueWords = getDueWords(dailyNewWords);
     if (dueWords.length === 0) {
       setMessage({ text: 'No words due for review!', type: 'info' });
       return;
@@ -45,7 +48,7 @@ const Learn = () => {
     setMessage({ text: '', type: null });
   };
 
-  // Show answer for current word
+  // Show the answer for the current word
   const showAnswer = () => {
     setIsShowingAnswer(true);
   };
@@ -53,38 +56,40 @@ const Learn = () => {
   // Handle user response to a word
   const handleResponse = async (understood: boolean) => {
     if (!currentWord) return;
-
+    
     setIsLoading(true);
     try {
-      // Update word's box based on user response
-      if (understood) {
-        await updateWordBox(currentWord.id, true);
-      } else {
-        await updateWordBox(currentWord.id, false);
-      }
-
+      await updateWordBox(currentWord.id, understood);
+      
+      // Update answered count
+      setAnsweredCount(prev => prev + 1);
+      
       // Move to next word or end session
-      const newAnsweredCount = answeredCount + 1;
-      setAnsweredCount(newAnsweredCount);
-
-      if (newAnsweredCount >= studySession.length) {
-        setMessage({ text: 'Review session complete!', type: 'success' });
-        setSessionActive(false);
-        checkDueWords(); // Refresh due words count
-      } else {
-        setCurrentWord(studySession[newAnsweredCount]);
+      const currentIndex = studySession.findIndex(w => w.id === currentWord.id);
+      if (currentIndex < studySession.length - 1) {
+        setCurrentWord(studySession[currentIndex + 1]);
         setIsShowingAnswer(false);
+      } else {
+        // End of session
+        setSessionActive(false);
+        setCurrentWord(null);
+        setMessage({ 
+          text: `Session complete! You reviewed ${studySession.length} words.`, 
+          type: 'success' 
+        });
       }
     } catch (error) {
-      setMessage({ text: 'Failed to update word status', type: 'error' });
+      console.error('Error updating word:', error);
+      setMessage({ 
+        text: 'An error occurred while updating the word.', 
+        type: 'error' 
+      });
     } finally {
       setIsLoading(false);
-      // Clear message after 3 seconds
-      setTimeout(() => setMessage({ text: '', type: null }), 3000);
     }
   };
 
-  // Mark word as completely mastered (won't show again)
+  // Mark a word as completely mastered
   const handleMarkAsMastered = async () => {
     if (!currentWord) return;
     
@@ -92,175 +97,126 @@ const Learn = () => {
     try {
       await setWordAsMastered(currentWord.id);
       
+      // Update answered count
+      setAnsweredCount(prev => prev + 1);
+      
       // Move to next word or end session
-      const newAnsweredCount = answeredCount + 1;
-      setAnsweredCount(newAnsweredCount);
-
-      if (newAnsweredCount >= studySession.length) {
-        setMessage({ text: 'Review session complete!', type: 'success' });
-        setSessionActive(false);
-        checkDueWords(); // Refresh due words count
-      } else {
-        setCurrentWord(studySession[newAnsweredCount]);
+      const currentIndex = studySession.findIndex(w => w.id === currentWord.id);
+      if (currentIndex < studySession.length - 1) {
+        setCurrentWord(studySession[currentIndex + 1]);
         setIsShowingAnswer(false);
+      } else {
+        // End of session
+        setSessionActive(false);
+        setCurrentWord(null);
+        setMessage({ 
+          text: `Session complete! You reviewed ${studySession.length} words.`, 
+          type: 'success' 
+        });
       }
     } catch (error) {
-      setMessage({ text: 'Failed to mark word as mastered', type: 'error' });
+      console.error('Error marking word as mastered:', error);
+      setMessage({ 
+        text: 'An error occurred while updating the word.', 
+        type: 'error' 
+      });
     } finally {
       setIsLoading(false);
-      // Clear message after 3 seconds
-      setTimeout(() => setMessage({ text: '', type: null }), 3000);
     }
   };
 
   // Get box name for display
   const getBoxName = (box: number): string => {
-    if (box === 6) return 'Mastered';
-    return `Box ${box}`;
+    switch (box) {
+      case 1: return 'Box 1 (Daily)';
+      case 2: return 'Box 2 (Every 2 days)';
+      case 3: return 'Box 3 (Every 4 days)';
+      case 4: return 'Box 4 (Weekly)';
+      case 5: return 'Box 5 (Every 2 weeks)';
+      case 6: return 'Mastered';
+      default: return `Box ${box}`;
+    }
   };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 text-indigo-900 dark:text-indigo-300">Learning</h1>
-      
-      {/* Message display */}
-      {message.text && (
-        <div className={`mb-4 p-3 rounded-lg ${
-          message.type === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
-          message.type === 'error' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
-          'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-        }`}>
-          {message.text}
-        </div>
-      )}
-      
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors">
         {!sessionActive ? (
-          // Session not active - show start screen
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Spaced Repetition Learning</h2>
-            
-            <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
-              <p className="text-gray-700 dark:text-gray-300 mb-2">
-                You have <span className="font-bold text-indigo-600 dark:text-indigo-300">{dueCount}</span> words due for review.
-              </p>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">
-                Total collection: {words.length} words
-              </p>
-            </div>
-            
-            <button 
+            <p className="mb-4 text-gray-700 dark:text-gray-300">
+              You have {dueCount} words due for review.
+            </p>
+            <button
               onClick={startSession}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
               disabled={dueCount === 0 || isLoading}
-              className={`px-6 py-3 rounded-md shadow-sm text-white transition-colors ${
-                dueCount > 0 && !isLoading
-                  ? 'bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-800' 
-                  : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
-              }`}
             >
-              {dueCount > 0 ? 'Start Review Session' : 'No Words to Review'}
+              {isLoading ? 'Loading...' : 'Start Review Session'}
             </button>
-            
-            {dueCount === 0 && words.length > 0 && (
-              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                All words have been reviewed. Check back later!
-              </p>
-            )}
-            
-            {words.length === 0 && (
-              <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg text-left">
-                <h3 className="font-medium text-yellow-800 dark:text-yellow-300 mb-2">No words in your collection</h3>
-                <p className="text-yellow-700 dark:text-yellow-400">
-                  Go to the Words section to add some words to your collection first.
-                </p>
+            {message.text && (
+              <div className={`mt-4 p-2 rounded ${
+                message.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                message.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+              }`}>
+                {message.text}
               </div>
             )}
-            
-            <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
-              <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">How It Works</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-                This app uses the spaced repetition technique with 6 boxes:
-              </p>
-              <ul className="text-sm text-gray-600 dark:text-gray-400 text-left max-w-md mx-auto space-y-1">
-                <li>• Box 1: Review every day</li>
-                <li>• Box 2: Review every 2 days</li>
-                <li>• Box 3: Review every 4 days</li>
-                <li>• Box 4: Review every 7 days</li>
-                <li>• Box 5: Review every 14 days</li>
-                <li>• Box 6: Mastered (never review)</li>
-              </ul>
-            </div>
           </div>
         ) : (
-          // Active learning session
           <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-indigo-800 dark:text-indigo-300">Review Session</h2>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Progress: {answeredCount + 1}/{studySession.length}
-              </div>
+            <div className="mb-4 flex justify-between items-center">
+              <span className="text-gray-700 dark:text-gray-300">
+                Progress: {answeredCount}/{studySession.length}
+              </span>
+              <span className="text-gray-700 dark:text-gray-300">
+                {currentWord && getBoxName(currentWord.box)}
+              </span>
             </div>
             
             {currentWord && (
-              <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-6 mb-6">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-lg font-medium text-indigo-800 dark:text-indigo-300">{currentWord.word}</h3>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                    {getBoxName(currentWord.box)}
-                  </span>
+              <div className="mb-6">
+                <div className="mb-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                  <h2 className="text-xl font-bold mb-2 text-indigo-800 dark:text-indigo-300">{currentWord.word}</h2>
+                  {isShowingAnswer && (
+                    <p className="text-gray-700 dark:text-gray-300">{currentWord.context}</p>
+                  )}
                 </div>
                 
-                {isShowingAnswer ? (
-                  <div className="mt-4 p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                    <p className="text-gray-700 dark:text-gray-300">{currentWord.context}</p>
-                  </div>
+                {!isShowingAnswer ? (
+                  <button
+                    onClick={showAnswer}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
+                    disabled={isLoading}
+                  >
+                    Show Answer
+                  </button>
                 ) : (
-                  <div className="mt-4 flex justify-center">
-                    <button 
-                      onClick={showAnswer}
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                    <button
+                      onClick={() => handleResponse(false)}
+                      className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
                       disabled={isLoading}
-                      className={`bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-4 py-2 rounded-md hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors ${
-                        isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
                     >
-                      Show Context
+                      {isLoading ? 'Loading...' : 'Didn\'t Know'}
+                    </button>
+                    <button
+                      onClick={() => handleResponse(true)}
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Loading...' : 'Knew It'}
+                    </button>
+                    <button
+                      onClick={handleMarkAsMastered}
+                      className="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Loading...' : 'Mark as Mastered'}
                     </button>
                   </div>
                 )}
-              </div>
-            )}
-            
-            {isShowingAnswer && (
-              <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
-                <button 
-                  onClick={() => handleResponse(false)}
-                  disabled={isLoading}
-                  className={`bg-red-500 dark:bg-red-700 text-white px-6 py-3 rounded-md hover:bg-red-600 dark:hover:bg-red-800 transition-colors shadow-sm ${
-                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {isLoading ? 'Processing...' : "I Don't Know It"}
-                </button>
-                
-                <button 
-                  onClick={() => handleResponse(true)}
-                  disabled={isLoading}
-                  className={`bg-green-500 dark:bg-green-700 text-white px-6 py-3 rounded-md hover:bg-green-600 dark:hover:bg-green-800 transition-colors shadow-sm ${
-                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {isLoading ? 'Processing...' : 'I Know It'}
-                </button>
-                
-                <button 
-                  onClick={handleMarkAsMastered}
-                  disabled={isLoading}
-                  className={`bg-purple-500 dark:bg-purple-700 text-white px-6 py-3 rounded-md hover:bg-purple-600 dark:hover:bg-purple-800 transition-colors shadow-sm ${
-                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {isLoading ? 'Processing...' : 'Mark as Mastered'}
-                </button>
               </div>
             )}
           </div>

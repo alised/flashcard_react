@@ -66,7 +66,7 @@ export interface WordsContextType {
   doesWordExist: (word: string) => boolean;
   exportWords: () => string;
   importWords: (jsonData: string) => Promise<boolean>;
-  getDueWords: () => WordEntry[];
+  getDueWords: (dailyLimit?: number) => WordEntry[];
   updateWordBox: (id: string, understood: boolean) => Promise<void>;
   setWordAsMastered: (id: string) => Promise<void>;
 }
@@ -128,29 +128,29 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  // Update an existing word
+  // Update a word
   const updateWord = async (id: string, word: string, context: string): Promise<boolean> => {
     if (!word.trim() || !context.trim()) return false;
-
-    // Don't allow update if the new word text already exists (and it's not the same word)
-    const wordExists = words.some(w => 
-      w.id !== id && w.word.toLowerCase() === word.toLowerCase()
-    );
     
-    if (wordExists) return false;
-
     try {
+      const existingWord = words.find(w => w.id === id);
+      if (!existingWord) return false;
+      
+      // Check for duplicates (case insensitive) but exclude the current word
+      if (words.some(w => w.id !== id && w.word.toLowerCase() === word.toLowerCase())) {
+        return false;
+      }
+      
       const updatedWord = {
-        ...words.find(w => w.id === id)!,
+        ...existingWord,
         word: word.trim(),
         context: context.trim()
       };
       
-      await db.words.put(updatedWord);
+      await db.words.update(id, updatedWord);
       setWords(prev => prev.map(w => 
         w.id === id ? updatedWord : w
       ));
-      
       return true;
     } catch (error) {
       console.error('Failed to update word:', error);
@@ -163,9 +163,9 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return words.some(w => w.word.toLowerCase() === word.toLowerCase());
   };
 
-  // Export words as JSON
+  // Export words to JSON
   const exportWords = (): string => {
-    return JSON.stringify(words);
+    return JSON.stringify(words, null, 2);
   };
 
   // Import words from JSON
@@ -195,7 +195,7 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           word: word.word.trim(),
           context: word.context.trim(),
           box: word.box || 1,
-          nextReview: word.nextReview || '1970-01-01',
+          nextReview: word.nextReview || new Date().toISOString().split('T')[0],
           lastReviewed: word.lastReviewed || '1970-01-01'
         }));
       
@@ -212,11 +212,26 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   // Get all words due for review
-  const getDueWords = (): WordEntry[] => {
+  const getDueWords = (dailyLimit?: number): WordEntry[] => {
     const today = new Date().toISOString().split('T')[0];
-    return words
+    
+    // Get all due words
+    const allDueWords = words
       .filter(word => word.nextReview <= today && word.box < 6) // Only get words due for review and not mastered
       .sort((a, b) => a.box - b.box); // Sort by box, so lower boxes come first
+    
+    // If no limit specified, return all due words
+    if (!dailyLimit) return allDueWords;
+    
+    // Separate words by box
+    const box1Words = allDueWords.filter(word => word.box === 1);
+    const otherBoxWords = allDueWords.filter(word => word.box > 1);
+    
+    // Limit box 1 words to dailyLimit
+    const limitedBox1Words = box1Words.slice(0, dailyLimit);
+    
+    // Combine and return
+    return [...limitedBox1Words, ...otherBoxWords];
   };
 
   // Update a word's box based on understanding
