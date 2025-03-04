@@ -3,6 +3,8 @@ import React, { createContext, useState, useContext, useEffect, ReactNode } from
 type ThemeContextType = {
   darkMode: boolean;
   toggleDarkMode: () => void;
+  dailyNewWords: number;
+  setDailyNewWords: (count: number) => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -15,6 +17,12 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const savedTheme = localStorage.getItem('darkMode');
     return savedTheme ? JSON.parse(savedTheme) : prefersDarkMode;
+  });
+
+  // Initialize daily new words count from localStorage or default to 10
+  const [dailyNewWords, setDailyNewWordsState] = useState<number>(() => {
+    const savedCount = localStorage.getItem('dailyNewWords');
+    return savedCount ? parseInt(savedCount, 10) : 10;
   });
 
   // Listen for changes in system preference
@@ -44,12 +52,23 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
+  // Save daily new words count to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('dailyNewWords', dailyNewWords.toString());
+  }, [dailyNewWords]);
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
 
+  const setDailyNewWords = (count: number) => {
+    if (count >= 1 && count <= 50) { // Ensure count is within reasonable limits
+      setDailyNewWordsState(count);
+    }
+  };
+
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
+    <ThemeContext.Provider value={{ darkMode, toggleDarkMode, dailyNewWords, setDailyNewWords }}>
       {children}
     </ThemeContext.Provider>
   );

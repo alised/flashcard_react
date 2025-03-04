@@ -1,7 +1,14 @@
 import { useTheme } from '../contexts/ThemeContext';
 
 const Settings = () => {
-  const { darkMode, toggleDarkMode } = useTheme();
+  const { darkMode, toggleDarkMode, dailyNewWords, setDailyNewWords } = useTheme();
+
+  const handleDailyWordsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setDailyNewWords(value);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -28,6 +35,25 @@ const Settings = () => {
             {darkMode ? 'Using dark mode (follows system preference)' : 'Using light mode (follows system preference)'}
           </p>
         </div>
+        
+        <div className="mb-5">
+          <label htmlFor="dailyNewWords" className="block text-lg font-medium mb-2 text-indigo-800 dark:text-indigo-300">
+            تعداد لغات جدید در هر روز
+          </label>
+          <input 
+            type="number" 
+            id="dailyNewWords" 
+            min="1" 
+            max="50" 
+            value={dailyNewWords}
+            onChange={handleDailyWordsChange}
+            className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 transition-colors"
+          />
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            تعداد لغات جدیدی که می‌خواهید هر روز یاد بگیرید (بین ۱ تا ۵۰)
+          </p>
+        </div>
+        
         <div className="mb-5">
           <label htmlFor="language" className="block text-lg font-medium mb-2 text-indigo-800 dark:text-indigo-300">Language</label>
           <select 
