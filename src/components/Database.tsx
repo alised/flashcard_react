@@ -130,16 +130,19 @@ const Database = () => {
           </div>
           
           <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-md">
-            <h3 className="text-sm font-medium mb-2 text-indigo-800 dark:text-indigo-300">File Format Example:</h3>
+            <h3 className="text-sm font-medium mb-2 text-indigo-800 dark:text-indigo-300">Import File Format:</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+              Only "word" and "context" fields are required for import. Other fields will be generated automatically.
+            </p>
             <pre className="text-xs overflow-x-auto bg-white dark:bg-gray-700 p-2 rounded border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300">
               {`[
   {
-    "id": "1234567890",
     "word": "example",
-    "context": "This is an example sentence.",
-    "box": 1,
-    "nextReview": 1634567890000,
-    "lastReviewed": 1634567890000
+    "context": "This is an example sentence."
+  },
+  {
+    "word": "sample",
+    "context": "Here is a sample sentence."
   }
 ]`}
             </pre>
