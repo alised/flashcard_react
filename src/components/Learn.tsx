@@ -19,7 +19,7 @@ const Learn = () => {
   const [studySession, setStudySession] = useState<WordEntry[]>([]);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' | null }>({ text: '', type: null });
   const [sessionActive, setSessionActive] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Load due words when component mounts
   useEffect(() => {
@@ -55,9 +55,9 @@ const Learn = () => {
 
   // Handle user response to a word
   const handleResponse = async (understood: boolean) => {
-    if (!currentWord) return;
+    if (!currentWord || isProcessing) return;
     
-    setIsLoading(true);
+    setIsProcessing(true);
     try {
       await updateWordBox(currentWord.id, understood);
       
@@ -85,15 +85,15 @@ const Learn = () => {
         type: 'error' 
       });
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
   // Mark a word as completely mastered
   const handleMarkAsMastered = async () => {
-    if (!currentWord) return;
+    if (!currentWord || isProcessing) return;
     
-    setIsLoading(true);
+    setIsProcessing(true);
     try {
       await setWordAsMastered(currentWord.id);
       
@@ -121,7 +121,7 @@ const Learn = () => {
         type: 'error' 
       });
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -150,9 +150,9 @@ const Learn = () => {
             <button
               onClick={startSession}
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
-              disabled={dueCount === 0 || isLoading}
+              disabled={dueCount === 0 || isProcessing}
             >
-              {isLoading ? 'Loading...' : 'Start Review Session'}
+              Start Review Session
             </button>
             {message.text && (
               <div className={`mt-4 p-2 rounded ${
@@ -188,7 +188,7 @@ const Learn = () => {
                   <button
                     onClick={showAnswer}
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
-                    disabled={isLoading}
+                    disabled={isProcessing}
                   >
                     Show Answer
                   </button>
@@ -197,23 +197,23 @@ const Learn = () => {
                     <button
                       onClick={() => handleResponse(false)}
                       className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
-                      disabled={isLoading}
+                      disabled={isProcessing}
                     >
-                      {isLoading ? 'Loading...' : 'Didn\'t Know'}
+                      Didn't Know
                     </button>
                     <button
                       onClick={() => handleResponse(true)}
                       className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
-                      disabled={isLoading}
+                      disabled={isProcessing}
                     >
-                      {isLoading ? 'Loading...' : 'Knew It'}
+                      Knew It
                     </button>
                     <button
                       onClick={handleMarkAsMastered}
                       className="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
-                      disabled={isLoading}
+                      disabled={isProcessing}
                     >
-                      {isLoading ? 'Loading...' : 'Mark as Mastered'}
+                      Mark as Mastered
                     </button>
                   </div>
                 )}
