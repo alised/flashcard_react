@@ -4,6 +4,7 @@ import Learn from './components/Learn';
 import Database from './components/Database';
 import Words from './components/Words';
 import Settings from './components/Settings';
+import Help from './components/Help';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { WordsProvider } from './contexts/WordsContext';
 
@@ -20,6 +21,7 @@ function App() {
               <Route path="/database" element={<Database />} />
               <Route path="/words" element={<Words />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/help" element={<Help />} />
             </Routes>
           </div>
         </Router>
