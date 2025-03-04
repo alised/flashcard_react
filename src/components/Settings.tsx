@@ -53,17 +53,6 @@ const Settings = () => {
             تعداد لغات جدیدی که می‌خواهید هر روز یاد بگیرید (بین ۱ تا ۵۰)
           </p>
         </div>
-        
-        <div className="mb-5">
-          <label htmlFor="language" className="block text-lg font-medium mb-2 text-indigo-800 dark:text-indigo-300">Language</label>
-          <select 
-            id="language" 
-            className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 transition-colors"
-          >
-            <option value="en">English</option>
-            <option value="fa">Persian</option>
-          </select>
-        </div>
       </div>
     </div>
   );
