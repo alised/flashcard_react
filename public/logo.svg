@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="128" fill="#4F46E5"/>
+  
+  <!-- Cards Stack Effect -->
+  <rect x="96" y="156" width="320" height="200" rx="16" fill="#6366F1" transform="rotate(-15 96 156)"/>
+  <rect x="96" y="156" width="320" height="200" rx="16" fill="#818CF8" transform="rotate(-8 96 156)"/>
+  
+  <!-- Main Card -->
+  <rect x="96" y="156" width="320" height="200" rx="16" fill="white"/>
+  
+  <!-- Text "F" -->
+  <path d="M216 236H296M216 286H266" stroke="#4F46E5" stroke-width="24" stroke-linecap="round"/>
+  
+  <!-- Decorative Elements -->
+  <circle cx="156" cy="196" r="8" fill="#4F46E5"/>
+  <circle cx="356" cy="316" r="8" fill="#4F46E5"/>
+</svg> 
