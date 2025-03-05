@@ -239,8 +239,22 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const box1Words = allDueWords.filter(word => word.box === 1);
     const otherBoxWords = allDueWords.filter(word => word.box > 1);
     
-    // Limit box 1 words to dailyLimit
-    const limitedBox1Words = box1Words.slice(0, dailyLimit);
+    // Count how many new words (box 1) were reviewed today
+    const todayNewWordsCount = words.filter(word => 
+      word.box === 1 && 
+      word.lastReviewed === today
+    ).length;
+
+    // If we've already reviewed the daily limit of new words, don't include any more box 1 words
+    if (todayNewWordsCount >= dailyLimit) {
+      return otherBoxWords;
+    }
+    
+    // Calculate how many more new words we can review today
+    const remainingNewWords = dailyLimit - todayNewWordsCount;
+    
+    // Limit box 1 words to remaining quota
+    const limitedBox1Words = box1Words.slice(0, remainingNewWords);
     
     // Combine and return
     return [...limitedBox1Words, ...otherBoxWords];
