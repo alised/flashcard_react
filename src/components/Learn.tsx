@@ -218,72 +218,9 @@ const Learn = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 text-indigo-900 dark:text-indigo-300">Learning</h1>
-      
-      {/* Statistics Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors">
-          <h2 className="text-lg font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Learning Progress</h2>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-gray-700 dark:text-gray-300">Overall Progress</span>
-                <span className="text-gray-700 dark:text-gray-300">{stats.learningProgress}%</span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                <div 
-                  className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" 
-                  style={{ width: `${stats.learningProgress}%` }}
-                ></div>
-              </div>
-            </div>
-            
-            <div className="flex justify-between text-sm">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{stats.totalWords}</div>
-                <div className="text-gray-600 dark:text-gray-400">Total Words</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.masteredCount}</div>
-                <div className="text-gray-600 dark:text-gray-400">Mastered</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{dueCount}</div>
-                <div className="text-gray-600 dark:text-gray-400">Due Today</div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors">
-          <h2 className="text-lg font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Words by Box</h2>
-          <div className="space-y-3">
-            {stats.boxCounts.map((count, index) => (
-              <div key={index}>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {getBoxName(index + 1)}
-                  </span>
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {count} words
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      index === 5 ? 'bg-green-500' : 'bg-indigo-500'
-                    }`}
-                    style={{ 
-                      width: `${stats.totalWords > 0 ? (count / stats.totalWords) * 100 : 0}%` 
-                    }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors">
+      {/* Main Learning Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors mb-4">
         {!sessionActive ? (
           <div className="text-center">
             <p className="mb-4 text-gray-700 dark:text-gray-300">
@@ -378,16 +315,85 @@ const Learn = () => {
           </div>
         )}
       </div>
+
+      {/* Help Section - Show only during active session */}
+      {sessionActive && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-4 transition-colors">
+          <h2 className="text-lg font-semibold mb-2 text-indigo-800 dark:text-indigo-300">Keyboard Shortcuts</h2>
+          <ul className="text-gray-700 dark:text-gray-300 space-y-1">
+            <li><strong>Space</strong> - Show answer / Mark as known</li>
+            <li><strong>1</strong> - Didn't know the word</li>
+            <li><strong>2</strong> - Knew the word</li>
+            <li><strong>3</strong> - Mark word as mastered</li>
+          </ul>
+        </div>
+      )}
       
-      <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors">
-        <h2 className="text-lg font-semibold mb-2 text-indigo-800 dark:text-indigo-300">Keyboard Shortcuts</h2>
-        <ul className="text-gray-700 dark:text-gray-300 space-y-1">
-          <li><strong>Space</strong> - Start session / Show answer / Mark as known</li>
-          <li><strong>1</strong> - Didn't know the word</li>
-          <li><strong>2</strong> - Knew the word</li>
-          <li><strong>3</strong> - Mark word as mastered</li>
-        </ul>
-      </div>
+      {/* Statistics Sections - Show only when not in active session */}
+      {!sessionActive && (
+        <>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-4 transition-colors">
+            <h2 className="text-lg font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Learning Progress</h2>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-gray-700 dark:text-gray-300">Overall Progress</span>
+                  <span className="text-gray-700 dark:text-gray-300">{stats.learningProgress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                  <div 
+                    className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" 
+                    style={{ width: `${stats.learningProgress}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <div className="flex justify-between text-sm">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{stats.totalWords}</div>
+                  <div className="text-gray-600 dark:text-gray-400">Total Words</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.masteredCount}</div>
+                  <div className="text-gray-600 dark:text-gray-400">Mastered</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{dueCount}</div>
+                  <div className="text-gray-600 dark:text-gray-400">Due Today</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors">
+            <h2 className="text-lg font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Words by Box</h2>
+            <div className="space-y-3">
+              {stats.boxCounts.map((count, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      {getBoxName(index + 1)}
+                    </span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      {count} words
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        index === 5 ? 'bg-green-500' : 'bg-indigo-500'
+                      }`}
+                      style={{ 
+                        width: `${stats.totalWords > 0 ? (count / stats.totalWords) * 100 : 0}%` 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
