@@ -38,7 +38,7 @@ const Settings = () => {
         
         <div className="mb-5">
           <label htmlFor="dailyNewWords" className="block text-lg font-medium mb-2 text-indigo-800 dark:text-indigo-300">
-            تعداد لغات جدید در هر روز
+            Daily New Words
           </label>
           <input 
             type="number" 
@@ -50,7 +50,7 @@ const Settings = () => {
             className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 transition-colors"
           />
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            تعداد لغات جدیدی که می‌خواهید هر روز یاد بگیرید (بین ۱ تا ۵۰)
+            Number of new words you want to learn each day (between 1 and 50). New words are words from Box 1 that you haven't studied yet. This setting doesn't affect review words from other boxes that are due for review.
           </p>
         </div>
 
