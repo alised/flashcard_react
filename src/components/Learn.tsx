@@ -21,6 +21,32 @@ const Learn = () => {
   const [sessionActive, setSessionActive] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Calculate statistics
+  const stats = {
+    totalWords: words.length,
+    boxCounts: [0, 0, 0, 0, 0, 0], // Index 0-5 for boxes 1-6
+    masteredCount: 0,
+    learningProgress: 0
+  };
+
+  words.forEach(word => {
+    if (word.box >= 1 && word.box <= 6) {
+      stats.boxCounts[word.box - 1]++;
+      if (word.box === 6) {
+        stats.masteredCount++;
+      }
+    }
+  });
+
+  // Calculate learning progress (excluding mastered words)
+  const totalBoxScore = words.reduce((sum, word) => {
+    return sum + (word.box < 6 ? word.box : 0);
+  }, 0);
+  const maxPossibleScore = (words.length - stats.masteredCount) * 5; // Box 5 is max for learning
+  stats.learningProgress = maxPossibleScore > 0 
+    ? Math.round((totalBoxScore / maxPossibleScore) * 100) 
+    : 0;
+
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -192,6 +218,71 @@ const Learn = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 text-indigo-900 dark:text-indigo-300">Learning</h1>
+      
+      {/* Statistics Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors">
+          <h2 className="text-lg font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Learning Progress</h2>
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="text-gray-700 dark:text-gray-300">Overall Progress</span>
+                <span className="text-gray-700 dark:text-gray-300">{stats.learningProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                <div 
+                  className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" 
+                  style={{ width: `${stats.learningProgress}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between text-sm">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{stats.totalWords}</div>
+                <div className="text-gray-600 dark:text-gray-400">Total Words</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.masteredCount}</div>
+                <div className="text-gray-600 dark:text-gray-400">Mastered</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{dueCount}</div>
+                <div className="text-gray-600 dark:text-gray-400">Due Today</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors">
+          <h2 className="text-lg font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Words by Box</h2>
+          <div className="space-y-3">
+            {stats.boxCounts.map((count, index) => (
+              <div key={index}>
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {getBoxName(index + 1)}
+                  </span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {count} words
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      index === 5 ? 'bg-green-500' : 'bg-indigo-500'
+                    }`}
+                    style={{ 
+                      width: `${stats.totalWords > 0 ? (count / stats.totalWords) * 100 : 0}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors">
         {!sessionActive ? (
           <div className="text-center">
