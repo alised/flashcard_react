@@ -37,8 +37,6 @@ const Navbar = () => {
             className={`px-3 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-900 transition-colors ${isActive('/settings')}`}
           >
             Settings
-            {darkMode && <span className="ml-1 text-xs">🌙</span>}
-            {!darkMode && <span className="ml-1 text-xs">☀️</span>}
           </Link>
           <Link 
             to="/help" 
