@@ -14,12 +14,19 @@ A modern flashcard application built with React and TypeScript, featuring a spac
 ## Screenshots
 
 ![Words Page](screenshots/words.png)
+
 *Add and manage your vocabulary*
 
 ![Learn Page](screenshots/learn.png)
+
 *Review words using spaced repetition*
 
+![Progress Page](screenshots/progress.png)
+
+*View your progress within the application*
+
 ![Settings Page](screenshots/settings.png)
+
 *Customize your learning experience*
 
 ## Spaced Repetition System
