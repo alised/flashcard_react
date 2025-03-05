@@ -1,9 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useTheme } from '../contexts/ThemeContext';
 
 const Navbar = () => {
   const location = useLocation();
-  const { darkMode } = useTheme();
 
   const isActive = (path: string) => {
     return location.pathname === path ? 'bg-indigo-700 dark:bg-indigo-900' : '';

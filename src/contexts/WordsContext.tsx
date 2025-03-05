@@ -1,29 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { FlashcardDB } from '../db';
 
-// Box intervals in days
-const BOX_INTERVALS = [1, 2, 4, 8, 16];
-
 // Helper function to get today's date in local timezone as YYYY-MM-DD
 const getTodayLocalDate = (): string => {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-};
-
-// Helper function to convert timestamp to date string (YYYY-MM-DD) in local timezone
-const timestampToDateString = (timestamp: number): string => {
-  if (timestamp === Number.MAX_SAFE_INTEGER) return '9999-12-31';
-  const date = new Date(timestamp);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-};
-
-// Helper function to convert date string to timestamp (start of day) in local timezone
-const dateStringToTimestamp = (dateString: string): number => {
-  if (dateString === '9999-12-31') return Number.MAX_SAFE_INTEGER;
-  const [year, month, day] = dateString.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-  date.setHours(0, 0, 0, 0);
-  return date.getTime();
 };
 
 // Calculate next review date based on box number
