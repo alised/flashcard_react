@@ -6,18 +6,20 @@ const Words = () => {
   const [newWord, setNewWord] = useState('');
   const [context, setContext] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' | null }>({ text: '', type: null });
+  const [pageMessage, setPageMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' | null }>({ text: '', type: null });
+  const [modalMessage, setModalMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' | null }>({ text: '', type: null });
   const [isLoading, setIsLoading] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Handle adding a new word
   const handleAddWord = async () => {
     if (!newWord.trim() || !context.trim()) {
-      setMessage({ text: 'Both word and context are required', type: 'error' });
+      setModalMessage({ text: 'Both word and context are required', type: 'error' });
       return;
     }
 
     if (doesWordExist(newWord)) {
-      setMessage({ text: 'This word already exists in your collection', type: 'error' });
+      setModalMessage({ text: 'This word already exists in your collection', type: 'error' });
       return;
     }
 
@@ -25,18 +27,20 @@ const Words = () => {
     try {
       const success = await addWord(newWord, context);
       if (success) {
-        setMessage({ text: 'Word added successfully', type: 'success' });
+        setPageMessage({ text: 'Word added successfully', type: 'success' });
         setNewWord('');
         setContext('');
+        setShowAddModal(false); // Close modal on success
+        setModalMessage({ text: '', type: null }); // Clear modal message
       } else {
-        setMessage({ text: 'Failed to add word', type: 'error' });
+        setModalMessage({ text: 'Failed to add word', type: 'error' });
       }
     } catch (error) {
-      setMessage({ text: 'Failed to add word', type: 'error' });
+      setModalMessage({ text: 'Failed to add word', type: 'error' });
     } finally {
       setIsLoading(false);
-      // Clear message after 3 seconds
-      setTimeout(() => setMessage({ text: '', type: null }), 3000);
+      // Clear page message after 3 seconds
+      setTimeout(() => setPageMessage({ text: '', type: null }), 3000);
     }
   };
 
@@ -45,13 +49,13 @@ const Words = () => {
     setIsLoading(true);
     try {
       await deleteWord(id);
-      setMessage({ text: 'Word deleted successfully', type: 'success' });
+      setPageMessage({ text: 'Word deleted successfully', type: 'success' });
     } catch (error) {
-      setMessage({ text: 'Failed to delete word', type: 'error' });
+      setPageMessage({ text: 'Failed to delete word', type: 'error' });
     } finally {
       setIsLoading(false);
-      // Clear message after 3 seconds
-      setTimeout(() => setMessage({ text: '', type: null }), 3000);
+      // Clear page message after 3 seconds
+      setTimeout(() => setPageMessage({ text: '', type: null }), 3000);
     }
   };
 
@@ -82,59 +86,111 @@ const Words = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 text-indigo-900 dark:text-indigo-300">Words</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-indigo-900 dark:text-indigo-300">Words</h1>
+        <button 
+          onClick={() => setShowAddModal(true)}
+          className="bg-indigo-600 dark:bg-indigo-700 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors shadow-sm"
+        >
+          Add New Word
+        </button>
+      </div>
       
-      {/* Message display */}
-      {message.text && (
+      {/* Page Message display */}
+      {pageMessage.text && (
         <div className={`mb-4 p-3 rounded-lg ${
-          message.type === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
-          message.type === 'error' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
+          pageMessage.type === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
+          pageMessage.type === 'error' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
           'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
         }`}>
-          {message.text}
+          {pageMessage.text}
         </div>
       )}
       
-      {/* Add new word form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 mb-6 transition-colors">
-        <h2 className="text-xl font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Add New Word</h2>
-        
-        <div className="mb-4">
-          <label htmlFor="word" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Word</label>
-          <input
-            id="word"
-            type="text"
-            value={newWord}
-            onChange={(e) => setNewWord(e.target.value)}
-            placeholder="Enter a new word or phrase"
-            className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-sm dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors"
-            disabled={isLoading}
-          />
-        </div>
-        
-        <div className="mb-4">
-          <label htmlFor="context" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Context (example sentence)</label>
-          <textarea
-            id="context"
-            value={context}
-            onChange={(e) => setContext(e.target.value)}
-            placeholder="Enter a sentence that uses this word"
-            rows={3}
-            className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-sm dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors"
-            disabled={isLoading}
-          />
-        </div>
-        
-        <button 
-          onClick={handleAddWord}
-          disabled={isLoading}
-          className={`bg-indigo-600 dark:bg-indigo-700 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors shadow-sm ${
-            isLoading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+      {/* Add Word Modal */}
+      {showAddModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => {
+            setShowAddModal(false);
+            setModalMessage({ text: '', type: null }); // Clear modal message when closing
+          }}
         >
-          {isLoading ? 'Adding...' : 'Add Word'}
-        </button>
-      </div>
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg mx-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-indigo-800 dark:text-indigo-300">Add New Word</h2>
+              <button 
+                onClick={() => {
+                  setShowAddModal(false);
+                  setModalMessage({ text: '', type: null }); // Clear modal message when closing
+                }}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Message display */}
+            {modalMessage.text && (
+              <div className={`mb-4 p-3 rounded-lg ${
+                modalMessage.type === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
+                modalMessage.type === 'error' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
+                'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+              }`}>
+                {modalMessage.text}
+              </div>
+            )}
+            
+            <div className="mb-4">
+              <label htmlFor="word" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Word</label>
+              <input
+                id="word"
+                type="text"
+                value={newWord}
+                onChange={(e) => setNewWord(e.target.value)}
+                placeholder="Enter a new word or phrase"
+                className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-sm dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors"
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label htmlFor="context" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Context (example sentence)</label>
+              <textarea
+                id="context"
+                value={context}
+                onChange={(e) => setContext(e.target.value)}
+                placeholder="Enter a sentence that uses this word"
+                rows={3}
+                className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-sm dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors"
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button 
+                onClick={() => setShowAddModal(false)}
+                disabled={isLoading}
+                className="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleAddWord}
+                disabled={isLoading}
+                className={`bg-indigo-600 dark:bg-indigo-700 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors shadow-sm ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {isLoading ? 'Adding...' : 'Add Word'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Words list */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors">
