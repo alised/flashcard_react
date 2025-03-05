@@ -239,9 +239,9 @@ export const WordsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const box1Words = allDueWords.filter(word => word.box === 1);
     const otherBoxWords = allDueWords.filter(word => word.box > 1);
     
-    // Count how many new words (box 1) were reviewed today
+    // Count how many new words from box 1 were reviewed today
     const todayNewWordsCount = words.filter(word => 
-      word.box === 1 && 
+      word.box === 2 && 
       word.lastReviewed === today
     ).length;
 
